@@ -250,22 +250,5 @@ namespace BDSManager
             serverInputStream.WriteLine("save hold");
             serverInputStream.WriteLine("save query");
         }
-
-
-
-
-
-
-        //funkcje do debugowania
-
-        private void serverKiller_Click(object sender, EventArgs e)
-        {
-            serverProcess.Kill();
-        }
-
-        private void outputClenner_Click(object sender, EventArgs e)
-        {
-            serverOutput.Clear();
-        }
     }
 }
