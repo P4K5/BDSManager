@@ -39,6 +39,8 @@
             this.backupButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
+            this.serverKiller = new System.Windows.Forms.Button();
+            this.outputClenner = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // serverOutputLabel
@@ -141,12 +143,34 @@
             this.label2.TabIndex = 8;
             this.label2.Text = "Application by Paks";
             // 
+            // serverKiller
+            // 
+            this.serverKiller.Location = new System.Drawing.Point(581, 366);
+            this.serverKiller.Name = "serverKiller";
+            this.serverKiller.Size = new System.Drawing.Size(75, 23);
+            this.serverKiller.TabIndex = 9;
+            this.serverKiller.Text = "kill server";
+            this.serverKiller.UseVisualStyleBackColor = true;
+            this.serverKiller.Click += new System.EventHandler(this.serverKiller_Click);
+            // 
+            // outputClenner
+            // 
+            this.outputClenner.Location = new System.Drawing.Point(581, 326);
+            this.outputClenner.Name = "outputClenner";
+            this.outputClenner.Size = new System.Drawing.Size(75, 23);
+            this.outputClenner.TabIndex = 10;
+            this.outputClenner.Text = "clean";
+            this.outputClenner.UseVisualStyleBackColor = true;
+            this.outputClenner.Click += new System.EventHandler(this.outputClenner_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(691, 439);
+            this.Controls.Add(this.outputClenner);
+            this.Controls.Add(this.serverKiller);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.stopButton);
             this.Controls.Add(this.backupButton);
@@ -180,5 +204,7 @@
         private Button backupButton;
         private Button stopButton;
         private Label label2;
+        private Button serverKiller;
+        private Button outputClenner;
     }
 }

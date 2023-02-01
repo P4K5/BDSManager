@@ -10,13 +10,12 @@ namespace BDSManager
         StreamWriter serverInputStream;
         bool[] allowClose = { false, false};
         bool closeAfterStop = false;
-        bool backupReady = false;
-        bool redirectSaveCommandsResult = false;
-        string[] saveCommandsResult = { "Saving...", "A previous save", "Data saved.", "Changes to the world", "levelname.txt" };
+        int redirectResult = 0;
         string[] toSearch = { "Server started.", "Server stop requested.", "Player connected:", "Player disconnected:", "Level Name:" };
         string processFileName = Directory.GetCurrentDirectory() + @"\server\bedrock_server.exe";
         string worldsDirectory = Directory.GetCurrentDirectory() + @"\server\worlds\";
         string backupDirectory = Directory.GetCurrentDirectory() + @"\backup\";
+        string backupName;
         string levelName;
 
         public Form1()
@@ -72,20 +71,38 @@ namespace BDSManager
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                if (redirectSaveCommandsResult)
+                switch (redirectResult)
                 {
-                    foreach (var item in saveCommandsResult)
-                    {
-                        if(e.Data.Contains(item))
+                    case 1:
+                        string[] saveCommandsResult = { "Saving...", "A previous save", "Data saved.", "Changes to the world", "levelname.txt" };
+                        int i = 0;
+                        foreach (var item in saveCommandsResult)
                         {
-                            if(item == saveCommandsResult[2])
+                            if (e.Data.Contains(item))
                             {
-                                backupReady = true;
+                                switch (i)
+                                {
+                                    case 1:
+                                        Thread.Sleep(1000);
+                                        serverInputStream.WriteLine("save query");
+                                        break;
+                                    case 2:
+                                        backupName = levelName + DateTime.Now.ToString(" yyyy-MM-dd HH-mm-ss");
+                                        Backup(worldsDirectory + levelName, backupDirectory + backupName, true);
+                                        break;
+                                    case 3:
+                                        redirectResult = 0;
+                                        Invoke(UpdateOutputTextBox, "BDSManager", "Backup saved: " + backupName);
+                                        Invoke(FormActivation, true);
+                                        break;
+                                }
+                                return;
                             }
-                            return;
+                            i++;
                         }
-                    }
+                        break;
                 }
+
                 if (InvokeRequired)
                 {
                     Invoke(CheckOutput, e.Data);
@@ -171,8 +188,7 @@ namespace BDSManager
                 data = ("[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:fff") + " " + sender + "] ");
             }
             data += txt;
-            serverOutput.AppendText(data);
-            serverOutput.AppendText(Environment.NewLine);
+            serverOutput.AppendText(data + Environment.NewLine);
             logFile.WriteLine(data);
         }
 
@@ -185,7 +201,7 @@ namespace BDSManager
             ActiveControl = serverInput;
         }
 
-        void Backup(string sourceDir, string targetDir)
+        void Backup(string sourceDir, string targetDir, bool mainDirectory)
         {
             Directory.CreateDirectory(targetDir);
 
@@ -196,7 +212,12 @@ namespace BDSManager
 
             foreach (var directory in Directory.GetDirectories(sourceDir))
             {
-                Backup(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
+                Backup(directory, Path.Combine(targetDir, Path.GetFileName(directory)), false);
+            }
+
+            if(mainDirectory)
+            {
+                serverInputStream.WriteLine("save resume");
             }
         }
 
@@ -225,24 +246,26 @@ namespace BDSManager
         {
             UpdateOutputTextBox("BDSManager", "Starting Backup...");
             FormActivation(false);
-            redirectSaveCommandsResult = true;
-            Task.Factory.StartNew(() =>
-            {
-                serverInputStream.WriteLine("save hold");
-                while(!backupReady)
-                {
-                    serverInputStream.WriteLine("save query");
-                    Thread.Sleep(1000);
-                }
-                string backupName = levelName + DateTime.Now.ToString(" yyyy-MM-dd HH-mm-ss");
-                Backup(worldsDirectory + levelName, backupDirectory + backupName);
-                serverInputStream.WriteLine("save resume");
-                Thread.Sleep(1000);
-                backupReady = false;
-                redirectSaveCommandsResult = false;
-                Invoke(UpdateOutputTextBox, "BDSManager", "Backup saved: " + backupName);
-                Invoke(FormActivation, true);
-            });
+            redirectResult = 1; 
+            serverInputStream.WriteLine("save hold");
+            serverInputStream.WriteLine("save query");
+        }
+
+
+
+
+
+
+        //funkcje do debugowania
+
+        private void serverKiller_Click(object sender, EventArgs e)
+        {
+            serverProcess.Kill();
+        }
+
+        private void outputClenner_Click(object sender, EventArgs e)
+        {
+            serverOutput.Clear();
         }
     }
 }
